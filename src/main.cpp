@@ -1,0 +1,64 @@
+#include <Arduino.h>
+
+#include <VL53L0X.h>
+VL53L0X  myTOF;
+
+#include <M5_Encoder.h>
+M5_Encoder myEncoder;
+
+#include <M5_PbHub.h>
+M5_PbHub myPbHub;
+
+#include <MicroOscSlip.h>
+MicroOscSlip <128> monOsc(& Serial);
+
+#include <FastLED.h>
+
+#define CANAL_KEY 0
+#define CANAL_ANGLE 1
+
+unsigned long monChronoDepart ;
+
+int boutonValeurChange;
+
+void setup() {
+  Wire.begin();
+  myEncoder.begin();
+  myPbHub.begin();
+  myTOF.init();
+  Serial.begin(115200);
+  monChronoDepart = millis();
+  myPbHub.setPixelCount( CANAL_KEY , 1);
+}
+
+void loop() {
+  if ( millis() - monChronoDepart >= 20 ) {
+    monChronoDepart = millis();
+
+    //changer la lumiere du key:
+    //myPbHub.setPixelColor( CANAL_KEY , 0 , 0,0,0 );
+
+    //key et angle
+    int maLectureKey = myPbHub.digitalRead( CANAL_KEY );
+    int maLectureAngle = myPbHub.analogRead( CANAL_ANGLE );
+
+    monOsc.sendInt( "/key" , maLectureKey );
+    monOsc.sendInt( "/angle" , maLectureAngle );
+
+    //encodeur
+    myEncoder.update();
+    int changementEncodeur = myEncoder.getEncoderChange();
+    int boutonEncodeur = myEncoder.getButtonState();
+
+    if (boutonValeurChange != boutonEncodeur) {
+      monOsc.sendInt( "/encodeur_bouton", boutonEncodeur);
+    }
+    boutonValeurChange = boutonEncodeur;
+
+    monOsc.sendInt( "/encodeur_change", changementEncodeur);
+
+    //tof
+    uint16_t mesure = myTOF.readRangeSingleMillimeters();
+    monOsc.sendInt( "/tof" ,mesure);
+  }
+}
