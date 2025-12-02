@@ -31,7 +31,13 @@ void setup() {
   Serial.begin(115200);
   monChronoDepart = millis();
   myPbHub.setPixelCount( CANAL_KEY , 1);
-  FastLED.addLeds<WS2812, PIXEL , GRB>(&Pixel, 1);
+
+    // lower the return signal rate limit (default is 0.25 MCPS)
+    myTOF.setSignalRateLimit(0.1);
+    // increase laser pulse periods (defaults are 14 and 10 PCLKs)
+    myTOF.setVcselPulsePeriod(VL53L0X::VcselPeriodPreRange, 18);
+    myTOF.setVcselPulsePeriod(VL53L0X::VcselPeriodFinalRange, 14);
+  
 
   //animation de la lumière au démarrage
   Pixel = CRGB(255, 0, 0);
