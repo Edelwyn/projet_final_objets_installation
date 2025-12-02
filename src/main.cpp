@@ -13,6 +13,8 @@ M5_PbHub myPbHub;
 MicroOscSlip <128> monOsc(& Serial);
 
 #include <FastLED.h>
+CRGB Pixel;
+#define PIXEL 27
 
 #define CANAL_KEY 0
 #define CANAL_ANGLE 1
@@ -29,13 +31,34 @@ void setup() {
   Serial.begin(115200);
   monChronoDepart = millis();
   myPbHub.setPixelCount( CANAL_KEY , 1);
+
+  //animation de la lumière au démarrage
+  Pixel = CRGB(255, 0, 0);
+  FastLED.show();
+  delay(1000);
+  Pixel = CRGB(255, 255, 0);
+  FastLED.show();
+  delay(1000);
+  Pixel = CRGB(0, 255, 0);
+  FastLED.show();
+  delay(1000);
+  Pixel = CRGB(0, 0, 0);
+  FastLED.show();
+}
+
+//recevoir du osc vers le arduino
+void myOscMessageParser(MicroOscMessage & receivedOscMessage) {
+  if (receivedOscMessage.checkOscAddress("/")) {
+       
+   } 
 }
 
 void loop() {
+  monOsc.onOscMessageReceived(myOscMessageParser);
   if ( millis() - monChronoDepart >= 20 ) {
     monChronoDepart = millis();
 
-    //changer la lumiere du key:
+    //changer la lumière du key:
     //myPbHub.setPixelColor( CANAL_KEY , 0 , 0,0,0 );
 
     //key et angle
